@@ -1,0 +1,264 @@
+{
+	"info": {
+		"_postman_id": "42aaabfc-4c01-41bf-bd40-c4a82b1c1dbc",
+		"name": "1. User Registration",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "28938496"
+	},
+	"item": [
+		{
+			"name": "User Register",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"var a= parseInt(pm.globals.get('user_number'));",
+							"console.log('user_number='+a);",
+							"a=a+1;",
+							"console.log('user_number='+a);",
+							"pm.globals.set('user_number', a);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"userName\": \"test{{user_number}}@test.com\",\n  \"password\": \"123456!\",\n  \"name\": \"Test\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/api/Auth/Register",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"Auth",
+						"Register"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Authentication",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var r=pm.response.json();",
+							"pm.globals.set('accessToken', r.accessToken);",
+							"",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"userName\": \"test{{user_number}}@test.com\",\n  \"password\": \"123456!\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/api/Auth/Token",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"Auth",
+						"Token"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Business",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var bID=pm.response.json();",
+							"pm.globals.set(\"BusinessID\",bID.id);",
+							"pm.globals.set('Name', bID.name);",
+							"pm.globals.set('User Name',bID.userName);",
+							"pm.globals.set('Business Type',bID.type);",
+							"",
+							"",
+							"",
+							"",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{accessToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"Test\",\n  \"type\": \"services\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/api/Businesses",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"Businesses"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Flow Correctness Check",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var BCT=pm.response.json();",
+							"console.log(Array.isArray(BCT));",
+							"var o1 = BCT[0];",
+							"var bIdLoc= o1.id;",
+							"console.log('bIdLoc='+bIdLoc);",
+							"var NameLoc=o1.name;",
+							"console.log('NameLoc='+NameLoc);",
+							"var TypeLoc=o1.type;",
+							"console.log('TypeLoc='+TypeLoc);",
+							"var UserNameLoc=o1.userName;",
+							"console.log('UserNameLoc='+UserNameLoc);",
+							"",
+							"pm.test(\"User has at least  one business\", function () {",
+							"    pm.expect(BCT.length).to.greaterThan(0);",
+							"});",
+							"",
+							"pm.test(\"Business ID is equal to the assigned at registration\", function () {",
+							"    pm.expect(bIdLoc).to.eql(pm.globals.get('BusinessID'));",
+							"});",
+							"",
+							"pm.test('Name is equal the registered', function",
+							"() {",
+							"    pm.expect(NameLoc).to.eql(pm.globals.get('Name'));",
+							"});",
+							"",
+							"pm.test(\"Business type is equal to the registered\", function ",
+							"() {",
+							"    pm.expect(TypeLoc).to.eql(pm.globals.get('Business Type'));",
+							"});",
+							"",
+							"pm.test(\"User name is equal to the registered\", function ",
+							"() {",
+							"    pm.expect(UserNameLoc).to.eql(pm.globals.get('User Name'));",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/Businesses",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"Businesses"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{accessToken}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}
